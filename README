@@ -1,0 +1,26 @@
+
+I - Description des fichiers :
+
+	I.1 - Fichiers génériques	
+		TreeBase.hs : Module contenant l'ensemble des fonctions pour la gestion générique des arbres avec des continuations
+		FPTree.hs : Implémentations de fonctions permettant de gérer les arbres de préfixes (notamment l'algorithme FP-Growth)
+	
+	I.2 - Executables
+		Compression.hs : Programme permettant de paralléliser la construction de l'arbre (à l'aide de la surcouche Eden)
+		ParallelFP.hs : Programme permettant de paralléliser l'exploration à partir d'un arbre compressé.
+		
+	NB : L'un des avantages de cette méthode est qu'il n'est pas forcément nécessaire de reconstruire l'arbre, si le support recherché est supperieur.
+
+II - Compilation
+	II.1 - Compilation des executables
+		se placer à la racine et taper
+			$ make
+		necessite haskell-platform (mtl binary ghc)
+			  openmpi, haskell-mpi
+			  Glasgow Parallel Haskell (GpH - Eden)
+
+	II.2 - Executables créés
+		ParallelFP : Executable à lancer avec mpirun pour démarer l'exploration
+		Compression : Script bash à utiliser pour démarer la compression
+		<username>=Compression : Véritable executable (ne pas le lancer, il faut utiliser le script bash généré automatiquement).
+
