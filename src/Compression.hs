@@ -64,31 +64,24 @@ mParMapRed reducer combiner mapper input = reducer $ parMap (combiner . (map map
 
 
 main = do
-  [x] <- getArgs
-  str <- readFile x
+  args <- getArgs
+  case args of
+    [x,rawminsupp,output] -> do
+             str <- readFile x
   
-  let lignes = lines str
-      topk = 50
-      minsupp = 2
-      suppdb =  lignes `seq` mParMapRed (wcCombine.(map fromList)) (assocs.wcCombine) wcMap (map words lignes)
-      suppdb' = assocs suppdb
-     -- ans = minsupp `seq` suppdb' `seq` mParMap (filterMap minsupp (fromList suppdb')) lignes
-      ans' = minsupp `seq` suppdb' `seq` mParMapRed filterReduce filterCombine (filterMap minsupp (fromList suppdb')) lignes
-    --  ans'' = ans' `seq` mParMap (map (\(t,s) -> if s >= minsupp then (take topk) $ runCont (fpgrowth [t] ans' (fromIntegral $ minsupp)) id else [])) (unshuffle noPe suppdb')
-      --ans'' = ans' `seq` mParMapRed id (map (filter (not.null))) exploreChunk (unshuffle noPe (assocs suppdb))
-      --exploreChunk ch = foldl f [] ch
-      --f acc (elem,t) = let ret = if toInteger t < minsupp then [] else take topk (runCont (fpgrowth [elem] ans' minsupp) id)  in (ret `par` acc) `seq` ret:acc
-  --    ans'' = ans' `seq` mParMapRed (concatMap concat) id (\(t,s)  -> if s >= 50 then take topk (runCont (fpgrowth [t] ans' 50) id) else []) (assocs suppdb)
---      suppdb = lignes `seq` parMapRedr (unionWith (+)) M.empty wcMap (map words lignes)
---      ans = suppdb `seq` (shuffle $ parMap (map (filterMap 50 empty)) (unshuffle noPe lignes))
-  putStrLn $ show suppdb
-  putStrLn "Compression..."
-  x <- return $! ans'
-  putStrLn $ "Terminé. Enregistrement de l'arbre"
-  B.writeFile "output.bin" (encode x)
-  
---  putStrLn $ show suppdb
---  putStrLn $ show ans
+             let lignes = lines str
+                 minsupp = read rawminsupp
+                 suppdb =  minsupp `seq` lignes `seq` mParMapRed (wcCombine.(map fromList)) (assocs.wcCombine) wcMap (map words lignes)
+                 suppdb' = assocs suppdb
+                 ans' = minsupp `seq` suppdb' `seq` mParMapRed filterReduce filterCombine (filterMap minsupp (fromList suppdb')) lignes
+
+             putStrLn "Calcul des supports..."
+             return $! suppdb
+             putStrLn "Compression..."
+             ret <- return $! ans'
+             putStrLn $ "Terminé. Enregistrement de l'arbre"
+             B.writeFile output (encode ret)
+    _ -> putStrLn "usage : ./Compression +RTS -N<nbProcess> -RTS <input> <minsupp> <output>"
   
 
 filterMap :: Int -> M.Map String Int -> String -> [String]
